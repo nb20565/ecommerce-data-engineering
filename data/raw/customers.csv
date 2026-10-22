@@ -1,0 +1,11 @@
+customer_id,first_name,last_name,email,country,city,signup_date
+C001,John,Smith,john.smith@email.com,France,Paris,2025-01-15
+C002,Emma,Johnson,emma.johnson@email.com,Germany,Berlin,2025-02-20
+C003,Michael,Brown,michael.brown@email.com,France,Lyon,2025-03-10
+C004,Sophia,Davis,sophia.davis@email.com,Spain,Madrid,2025-03-25
+C005,Daniel,Wilson,daniel.wilson@email.com,Italy,Rome,2025-04-05
+C006,Olivia,Martin,olivia.martin@email.com,France,Nice,2025-04-18
+C007,James,Anderson,james.anderson@email.com,Netherlands,Amsterdam,2025-05-02
+C008,Isabella,Thomas,isabella.thomas@email.com,Belgium,Brussels,2025-05-15
+C009,William,Moore,william.moore@email.com,France,Paris,2025-06-01
+C010,Ava,Taylor,ava.taylor@email.com,Germany,Munich,2025-06-12

@@ -1,0 +1,16 @@
+order_id,customer_id,product_id,order_date,quantity,payment_method,order_status
+O001,C001,P001,2025-06-15,1,Credit Card,Completed
+O002,C002,P003,2025-06-16,2,PayPal,Completed
+O003,C003,P002,2025-06-17,1,Credit Card,Completed
+O004,C004,P005,2025-06-18,1,Bank Transfer,Completed
+O005,C005,P006,2025-06-19,3,PayPal,Completed
+O006,C006,P004,2025-06-20,1,Credit Card,Completed
+O007,C007,P007,2025-06-21,2,Credit Card,Completed
+O008,C008,P008,2025-06-22,2,PayPal,Completed
+O009,C009,P009,2025-06-23,1,Credit Card,Completed
+O010,C010,P010,2025-06-24,2,Bank Transfer,Completed
+O011,C001,P002,2025-06-25,1,PayPal,Completed
+O012,C002,P008,2025-06-26,3,Credit Card,Completed
+O013,C003,P003,2025-06-27,1,Credit Card,Cancelled
+O014,C004,P006,2025-06-28,2,PayPal,Completed
+O015,C005,P001,2025-06-29,1,Credit Card,Completed
