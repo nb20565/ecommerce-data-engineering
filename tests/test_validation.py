@@ -4,7 +4,8 @@ import pytest
 from src.validation.validate_data import (
     validate_customers,
     validate_products,
-    validate_orders
+    validate_orders,
+    validate_api_products
 )
 
 
@@ -89,3 +90,35 @@ def test_invalid_order_quantity():
 
     with pytest.raises(ValueError):
         validate_orders(df)
+
+def test_valid_api_products():
+    df = pd.DataFrame({
+        "id": [1],
+        "title": ["Test Product"],
+        "category": ["Electronics"],
+        "price": [100],
+        "discountPercentage": [10],
+        "rating": [4.5],
+        "stock": [50],
+        "brand": ["Test Brand"],
+        "sku": ["TEST-001"]
+    })
+
+    assert validate_api_products(df) is True
+
+
+def test_negative_api_product_price():
+    df = pd.DataFrame({
+        "id": [1],
+        "title": ["Test Product"],
+        "category": ["Electronics"],
+        "price": [-100],
+        "discountPercentage": [10],
+        "rating": [4.5],
+        "stock": [50],
+        "brand": ["Test Brand"],
+        "sku": ["TEST-001"]
+    })
+
+    with pytest.raises(ValueError):
+        validate_api_products(df)

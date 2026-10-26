@@ -78,3 +78,40 @@ def validate_orders(df):
         raise ValueError("Invalid order quantity found.")
 
     return True
+
+
+def validate_api_products(df):
+    required_columns = [
+        "id",
+        "title",
+        "category",
+        "price",
+        "discountPercentage",
+        "rating",
+        "stock",
+        "brand",
+        "sku"
+    ]
+
+    for column in required_columns:
+        if column not in df.columns:
+            raise ValueError(
+                f"Missing column in API products data: {column}"
+            )
+
+    if df["id"].duplicated().any():
+        raise ValueError("Duplicate API product id found.")
+
+    if df["id"].isnull().any():
+        raise ValueError("Missing API product id found.")
+
+    if df["price"].isnull().any():
+        raise ValueError("Missing API product price found.")
+
+    if (df["price"] < 0).any():
+        raise ValueError("Negative API product price found.")
+
+    if (df["stock"] < 0).any():
+        raise ValueError("Negative API product stock found.")
+
+    return True
