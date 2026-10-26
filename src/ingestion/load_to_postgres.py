@@ -1,21 +1,43 @@
+import logging
 import os
+import sys
 from urllib.parse import quote_plus
 
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
+# ============================================================
+# Logging Configuration
+# ============================================================
 
-# ============================================
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("logs/etl.log"),
+        logging.StreamHandler(),
+    ],
+)
+
+logger = logging.getLogger(__name__)
+
+
+# Allow imports from the project root
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+from src.validation.validate_data import (
+    validate_customers,
+    validate_products,
+    validate_orders,
+)
+
+
+# ============================================================
 # 1. Load environment variables
-# ============================================
+# ============================================================
 
 load_dotenv()
-
-
-# ============================================
-# 2. Read PostgreSQL settings from .env
-# ============================================
 
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
@@ -24,38 +46,28 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 
-# ============================================
-# 3. Check required settings
-# ============================================
+# ============================================================
+# 2. Validate database configuration
+# ============================================================
 
-if not DB_HOST:
-    raise ValueError("DB_HOST is missing from .env")
+required_variables = {
+    "DB_HOST": DB_HOST,
+    "DB_PORT": DB_PORT,
+    "DB_NAME": DB_NAME,
+    "DB_USER": DB_USER,
+    "DB_PASSWORD": DB_PASSWORD,
+}
 
-if not DB_PORT:
-    raise ValueError("DB_PORT is missing from .env")
-
-if not DB_NAME:
-    raise ValueError("DB_NAME is missing from .env")
-
-if not DB_USER:
-    raise ValueError("DB_USER is missing from .env")
-
-if not DB_PASSWORD:
-    raise ValueError("DB_PASSWORD is missing from .env")
+for variable, value in required_variables.items():
+    if not value:
+        raise ValueError(f"{variable} is missing from .env")
 
 
-# ============================================
-# 4. Encode password
-# ============================================
-# This is important because your password contains @.
-# quote_plus() safely handles @, #, %, !, etc.
+# ============================================================
+# 3. Create PostgreSQL connection
+# ============================================================
 
 encoded_password = quote_plus(DB_PASSWORD)
-
-
-# ============================================
-# 5. Create PostgreSQL connection
-# ============================================
 
 connection_url = (
     f"postgresql+psycopg2://"
@@ -65,30 +77,63 @@ connection_url = (
 
 engine = create_engine(connection_url)
 
+logger.info("Database connection configured successfully.")
 
-# ============================================
-# 6. CSV file paths
-# ============================================
+
+# ============================================================
+# 4. Load cleaned CSV files
+# ============================================================
 
 customers_file = "data/processed/customers_cleaned.csv"
 products_file = "data/processed/products_cleaned.csv"
 orders_file = "data/processed/orders_cleaned.csv"
 
-
-# ============================================
-# 7. Read CSV files
-# ============================================
-
 customers = pd.read_csv(customers_file)
 products = pd.read_csv(products_file)
 orders = pd.read_csv(orders_file)
 
-print("CSV files loaded successfully.")
+logger.info("CSV files loaded successfully.")
+
+logger.info(f"Customers: {len(customers)}")
+logger.info(f"Products: {len(products)}")
+logger.info(f"Orders: {len(orders)}")
 
 
-# ============================================
-# 8. Load customers
-# ============================================
+# ============================================================
+# 5. Validate data
+# ============================================================
+
+logger.info("Starting data validation...")
+
+validate_customers(customers)
+logger.info("Customers validation passed.")
+
+validate_products(products)
+logger.info("Products validation passed.")
+
+validate_orders(orders)
+logger.info("Orders validation passed.")
+
+
+# ============================================================
+# 6. Load data into PostgreSQL
+# ============================================================
+
+logger.info("Loading data into PostgreSQL...")
+
+
+# Clear existing staging data
+
+with engine.begin() as connection:
+    connection.exec_driver_sql(
+        "TRUNCATE TABLE staging_orders, staging_products, staging_customers "
+        "RESTART IDENTITY CASCADE"
+    )
+
+logger.info("Existing staging data cleared.")
+
+
+# Load customers
 
 customers.to_sql(
     "staging_customers",
@@ -97,12 +142,10 @@ customers.to_sql(
     index=False
 )
 
-print(f"Customers loaded: {len(customers)}")
+logger.info(f"Customers loaded: {len(customers)}")
 
 
-# ============================================
-# 9. Load products
-# ============================================
+# Load products
 
 products.to_sql(
     "staging_products",
@@ -111,12 +154,10 @@ products.to_sql(
     index=False
 )
 
-print(f"Products loaded: {len(products)}")
+logger.info(f"Products loaded: {len(products)}")
 
 
-# ============================================
-# 10. Load orders
-# ============================================
+# Load orders
 
 orders.to_sql(
     "staging_orders",
@@ -125,11 +166,10 @@ orders.to_sql(
     index=False
 )
 
-print(f"Orders loaded: {len(orders)}")
+logger.info(f"Orders loaded: {len(orders)}")
 
+# ============================================================
+# 7. Pipeline completed
+# ============================================================
 
-# ============================================
-# 11. Final message
-# ============================================
-
-print("Data successfully loaded into PostgreSQL!")
+logger.info("ETL pipeline completed successfully!")
